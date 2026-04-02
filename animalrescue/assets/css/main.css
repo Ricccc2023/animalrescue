@@ -196,7 +196,7 @@ tr:hover {
   background: #f9f9f9;
 }
 .btn-search {
-    background: #1f4e46;   /* same as top banner */
+    background: #1e5e7e;   /* same as top banner */
     color: #fff;
     border: none;
     padding: 8px 14px;
@@ -221,7 +221,7 @@ tr:hover {
     transition: 0.2s ease;
 }
 .btn-add:hover {
-    background: #2b82ad;
+    background: #1e5e7e;
 }
 .stats-grid {
     display: grid;
@@ -262,7 +262,7 @@ tr:hover {
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
-    border-color: #1f4e46;
+    border-color: #1e5e7e;
 }
 
 /* Textarea adjustment */
@@ -303,7 +303,7 @@ tr:hover {
 
 /* Focus */
 .form-row input:focus {
-    border-color: #1f4e46;
+    border-color: #1e5e7e;
 }
 /* =========================
    UNIVERSAL SAVE BUTTON
@@ -439,7 +439,7 @@ tr:hover {
 }
 /* Confirm / Success */
 .action-success {
-    background: #1f4e46;
+    background: #1e5e7e;
     color: #fff;
 }
 
@@ -646,7 +646,7 @@ tr:hover {
 /* Focus */
 .form-row input:focus,
 .form-row select:focus {
-    border-color: #1f4e46;
+    border-color: #1e5e7e;
 }
 
 /* =========================
@@ -816,7 +816,7 @@ tr:hover {
 }
 .admin-btn {
     background: white;
-    color: #1f4e46;
+    color: #1e5e7e;
     padding: 8px 18px;
     font-size: 14px;
     font-weight: 600;
