@@ -165,12 +165,12 @@ Save
 <div class="actions">
 
 <a href="view.php?id=<?= $row['id'] ?>&month=<?= $month ?>&year=<?= $year ?>"
-class="action-btn action-success">
+class="action-success">
 View
 </a>
 
 <a href="print.php?id=<?= $row['id'] ?>&month=<?= $month ?>&year=<?= $year ?>"
-class="action-btn action-secondary"
+class="action-success"
 target="_blank">
 Print
 </a>

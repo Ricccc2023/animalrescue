@@ -7,21 +7,37 @@ $active = "inventory";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    // Get and sanitize inputs
     $name   = trim($_POST['name']);
     $type   = trim($_POST['type']);
     $breed  = trim($_POST['breed']);
-    $gender = $_POST['gender']; // NEW
+    $gender = $_POST['gender'];
     $status = $_POST['status'];
     $notes  = trim($_POST['notes']);
 
-    // Insert with gender
+    // IMAGE UPLOAD
+    $imageName = null;
+
+    if (!empty($_FILES['image']['name'])) {
+
+        $uploadDir = __DIR__ . "/../uploads/animals/";
+        $imageName = time() . "_" . basename($_FILES['image']['name']);
+        $target = $uploadDir . $imageName;
+
+        // create folder if not exists
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        move_uploaded_file($_FILES['image']['tmp_name'], $target);
+    }
+
+    // INSERT with image
     $stmt = $conn->prepare("
-        INSERT INTO animals (name, type, breed, gender, status, notes)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO animals (name, type, breed, gender, status, notes, image)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     ");
 
-    $stmt->bind_param("ssssss", $name, $type, $breed, $gender, $status, $notes);
+    $stmt->bind_param("sssssss", $name, $type, $breed, $gender, $status, $notes, $imageName);
     $stmt->execute();
 
     header("Location: index.php");
@@ -36,7 +52,7 @@ ob_start();
 
 <div class="card">
 
-<form method="POST">
+<form method="POST" enctype="multipart/form-data">
 
 <div class="form-row">
 <label>Name</label>
@@ -53,7 +69,6 @@ ob_start();
 <input type="text" name="breed">
 </div>
 
-<!-- NEW GENDER FIELD -->
 <div class="form-row">
 <label>Gender</label>
 <select name="gender" required>
@@ -69,6 +84,11 @@ ob_start();
 <option value="rescued">Rescued</option>
 <option value="adopted">Adopted</option>
 </select>
+</div>
+
+<div class="form-row">
+<label>Image</label>
+<input type="file" name="image" accept="image/*">
 </div>
 
 <div class="form-row">

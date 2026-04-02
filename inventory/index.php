@@ -9,9 +9,9 @@ $active = "inventory";
 $q = $_GET['q'] ?? '';
 $search = "%" . $q . "%";
 
-// Query with gender included
+// INCLUDE image column
 $stmt = $conn->prepare("
-    SELECT id, name, type, breed, gender, status 
+    SELECT id, name, type, breed, gender, status, image
     FROM animals
     WHERE name LIKE ?
     ORDER BY id DESC
@@ -40,7 +40,6 @@ placeholder="Search animal name..."
 style="max-width:300px;">
 
 <button class="btn-add">Search</button>
-
 <a href="create.php" class="btn-add">+</a>
 
 </form>
@@ -57,6 +56,7 @@ Total: <?= count($animals) ?>
 
 <table>
 <tr>
+<th>Image</th>
 <th>Name</th>
 <th>Type</th>
 <th>Breed</th>
@@ -68,11 +68,18 @@ Total: <?= count($animals) ?>
 <?php foreach ($animals as $a): ?>
 <tr>
 
+<td>
+<?php if (!empty($a['image'])): ?>
+    <img src="../uploads/animals/<?= htmlspecialchars($a['image']) ?>" width="60">
+<?php else: ?>
+    No Image
+<?php endif; ?>
+</td>
+
 <td><b><?= htmlspecialchars($a['name']) ?></b></td>
 <td><?= htmlspecialchars($a['type']) ?></td>
 <td><?= htmlspecialchars($a['breed']) ?></td>
 
-<!-- NEW GENDER COLUMN -->
 <td>
 <?php if ($a['gender'] == 'male'): ?>
 <span style="color:blue;">Male</span>
@@ -81,7 +88,6 @@ Total: <?= count($animals) ?>
 <?php endif; ?>
 </td>
 
-<!-- STATUS -->
 <td>
 <?php if ($a['status'] == 'available'): ?>
 <span style="color:green;">Available</span>
