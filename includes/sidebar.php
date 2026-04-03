@@ -12,12 +12,13 @@ $role = $_SESSION['role'] ?? '';
 Dashboard
 </a>
 
+<a href="<?= BASE_URL ?>/inventory/index.php">
+Animals
+</a>
 
 <a href="<?= BASE_URL ?>/rescues/index.php">
 Rescues
 </a>
-
-
 
 <a href="<?= BASE_URL ?>/volunteers/index.php">
 Volunteers
@@ -27,7 +28,6 @@ Volunteers
 <a href="<?= BASE_URL ?>/adoptions/index.php">
 Adoptions
 </a>
-
 
 <?php if($role === 'admin'): ?>
 <a href="<?= BASE_URL ?>/donations/index.php">
@@ -39,18 +39,9 @@ Donations
 Supplies
 </a>
 
-
-
-<a href="<?= BASE_URL ?>/inventory/index.php">
-Animals
-</a>
-
-
-
 <a href="<?= BASE_URL ?>/records/index.php">
 Records
 </a>
-
 
 </div>
 
