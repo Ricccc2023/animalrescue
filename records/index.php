@@ -38,7 +38,7 @@ ob_start();
 <h3>Reports</h3>
 
 <a href="?page=animals" class="btn-save">Animals</a>
-<a href="?page=adoptions" class="btn-save">Adoptions</a>
+<a href="?page=adoptions" class="btn-save">Adoption Requests</a>
 <a href="?page=donations" class="btn-save">Donations</a>
 <a href="?page=rescues" class="btn-save">Rescues</a>
 

@@ -33,7 +33,7 @@ require_once "includes/config.php";
         .topbar { 
             background: #409fcf; 
             color: white; 
-            padding: 18px 20px; 
+            padding: 6px 20px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
@@ -116,7 +116,7 @@ require_once "includes/config.php";
             top: 0; 
             width: 100%; 
             height: 100%; 
-            background: rgba(31, 78, 70, 0.7); /* Themed backdrop */
+            background: rgba(64, 159, 207, 0); /* Themed backdrop */
             backdrop-filter: blur(3px);
         }
 
@@ -184,7 +184,7 @@ require_once "includes/config.php";
         </div>
 
         <div style="margin-top:20px;">
-            <a href="pets.php" class="action-btn">Adopt Now!</a>
+            <a href="requestsadoptions/pets.php" class="action-btn">Adopt Now!</a>
             
             <a href="public_donate.php" class="action-btn">Donate</a>
 
@@ -196,8 +196,8 @@ require_once "includes/config.php";
 <div id="volunteerModal" class="modal">
     <div class="modal-content">
         <div class="modal-header"><h3>Volunteer Application</h3></div>
-        <form action="process_volunteer.php" method="POST">
-            <div class="form-group">
+            <form action="/animalrescue_db/volunteers/process_volunteer.php" method="POST">
+                <div class="form-group">
                 <label>Full Name</label>
                 <input type="text" name="name" required>
             </div>
@@ -207,7 +207,7 @@ require_once "includes/config.php";
             </div>
             <div class="form-group">
                 <label>Preferred Role</label>
-                <input type="text" name="role" placeholder="e.g. Rescuer, Shelter Cleaner" required>
+                <input type="text" name="role" placeholder="Rescuer, Shelter Cleaner" required>
             </div>
             <div style="display:flex; gap:10px; justify-content: flex-end;">
                 <button type="button" onclick="closeModal('volunteerModal')" class="close-btn">Cancel</button>

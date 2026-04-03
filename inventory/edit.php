@@ -66,9 +66,18 @@ value="<?= htmlspecialchars($animal['name']) ?>" required>
 </div>
 
 <div class="form-row">
-<label>Type</label>
-<input type="text" name="type"
-value="<?= htmlspecialchars($animal['type']) ?>" required>
+    <label>Type</label>
+    <select name="type" required>
+        <option value="" disabled>--Select--</option>
+
+        <option value="Dog" <?= ($animal['type'] == 'Dog') ? 'selected' : '' ?>>
+            Dog
+        </option>
+
+        <option value="Cat" <?= ($animal['type'] == 'Cat') ? 'selected' : '' ?>>
+            Cat
+        </option>
+    </select>
 </div>
 
 <div class="form-row">
@@ -91,7 +100,6 @@ value="<?= htmlspecialchars($animal['breed']) ?>">
 <select name="status">
 <option value="available" <?= $animal['status']=='available'?'selected':'' ?>>Available</option>
 <option value="rescued" <?= $animal['status']=='rescued'?'selected':'' ?>>Rescued</option>
-<option value="adopted" <?= $animal['status']=='adopted'?'selected':'' ?>>Adopted</option>
 </select>
 </div>
 

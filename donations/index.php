@@ -5,15 +5,87 @@ require_once __DIR__ . "/../includes/auth.php";
 $title = "Donations";
 $active = "donations";
 
-/* FETCH DONATIONS */
-$result = $conn->query("SELECT * FROM donations ORDER BY id DESC");
+/* =========================
+FILTERS
+========================= */
+
+$search = trim($_GET['search'] ?? '');
+$dateFilter = $_GET['date'] ?? '';
+$order = ($_GET['sort'] ?? 'DESC') === 'ASC' ? 'ASC' : 'DESC';
+
+$params = [];
+$types  = "";
+
+/* =========================
+BASE QUERY
+========================= */
+
+$sql = "SELECT * FROM donations WHERE 1=1";
+
+/* =========================
+SEARCH
+========================= */
+
+if ($search !== '') {
+    $sql .= " AND donor_name LIKE ?";
+    $like = "%$search%";
+    $params[] = $like;
+    $types .= "s";
+}
+
+/* =========================
+DATE FILTER
+========================= */
+
+if ($dateFilter !== '') {
+    $sql .= " AND donation_date = ?";
+    $params[] = $dateFilter;
+    $types .= "s";
+}
+
+$sql .= " ORDER BY id $order";
+
+/* =========================
+EXECUTE
+========================= */
+
+$stmt = $conn->prepare($sql);
+
+if (!empty($params)) {
+    $stmt->bind_param($types, ...$params);
+}
+
+$stmt->execute();
+$result = $stmt->get_result();
 $rows = $result->fetch_all(MYSQLI_ASSOC);
 
-/* TOTAL */
-$total = $conn->query("SELECT SUM(amount) as total FROM donations")
-              ->fetch_assoc()['total'] ?? 0;
+/* =========================
+TOTAL (FILTERED)
+========================= */
 
-/* ✅ CHECK PENDING DONATIONS */
+$totalSql = "SELECT SUM(amount) as total FROM donations WHERE 1=1";
+
+if ($search !== '') {
+    $totalSql .= " AND donor_name LIKE ?";
+}
+
+if ($dateFilter !== '') {
+    $totalSql .= " AND donation_date = ?";
+}
+
+$totalStmt = $conn->prepare($totalSql);
+
+if (!empty($params)) {
+    $totalStmt->bind_param($types, ...$params);
+}
+
+$totalStmt->execute();
+$total = $totalStmt->get_result()->fetch_assoc()['total'] ?? 0;
+
+/* =========================
+PENDING
+========================= */
+
 $pendingQuery = $conn->query("SELECT COUNT(*) as total FROM pending_donations");
 $pendingData = $pendingQuery->fetch_assoc();
 $hasPending = $pendingData['total'] > 0;
@@ -42,6 +114,24 @@ ob_start();
 
 <div class="card">
 
+<form method="GET" class="filter-bar">
+
+<input type="text" 
+       name="search" 
+       placeholder="Search donor"
+       value="<?= htmlspecialchars($search) ?>">
+
+<input type="date" name="date" value="<?= htmlspecialchars($dateFilter) ?>">
+
+<select name="sort">
+    <option value="DESC" <?= $order==='DESC'?'selected':'' ?>>Newest</option>
+    <option value="ASC" <?= $order==='ASC'?'selected':'' ?>>Oldest</option>
+</select>
+
+<button class="btn-search">Filter</button>
+
+</form>
+
 <div class="table-wrap">
 <table>
 
@@ -51,6 +141,12 @@ ob_start();
     <th>Date</th>
     <th>Actions</th>
 </tr>
+
+<?php if(!$rows): ?>
+<tr>
+    <td colspan="4">No donations found.</td>
+</tr>
+<?php else: ?>
 
 <?php foreach($rows as $r): ?>
 <tr>
@@ -71,10 +167,6 @@ ob_start();
 </tr>
 <?php endforeach; ?>
 
-<?php if(count($rows) == 0): ?>
-<tr>
-    <td colspan="4">No donations found.</td>
-</tr>
 <?php endif; ?>
 
 </table>

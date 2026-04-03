@@ -60,8 +60,12 @@ ob_start();
 </div>
 
 <div class="form-row">
-<label>Type</label>
-<input type="text" name="type" required>
+    <label>Type</label>
+    <select name="type" required>
+        <option value="" disabled selected>--Select--</option>
+        <option value="Dog">Dog</option>
+        <option value="Cat">Cat</option>
+    </select>
 </div>
 
 <div class="form-row">

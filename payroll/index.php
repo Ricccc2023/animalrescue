@@ -1,196 +1,201 @@
 <?php
-require_once "../includes/config.php";
-require_once "../includes/auth.php";
+require_once __DIR__ . "/../includes/config.php";
+require_once __DIR__ . "/../includes/auth.php";
 
-/* ADMIN SECURITY */
-if(!isset($_SESSION['role']) || $_SESSION['role'] != 'admin'){
-echo "<script>
-alert('Access Denied. Admin only.');
-window.location='../dashboard.php';
-</script>";
-exit;
+/* =============================
+   ADMIN SECURITY
+============================= */
+if (!isset($_SESSION['role']) || $_SESSION['role'] != 'admin') {
+    echo "<script>
+        alert('Access Denied. Admin only.');
+        window.location='../dashboard.php';
+    </script>";
+    exit;
 }
 
-/* FILTER */
-$month = $_GET['month'] ?? date("m");
-$year  = $_GET['year'] ?? date("Y");
+/* =============================
+   FILTER (FIXED FORMAT)
+============================= */
+$month = str_pad((int)($_GET['month'] ?? date("m")), 2, '0', STR_PAD_LEFT);
+$year  = (int)($_GET['year'] ?? date("Y"));
 
-/* UPDATE PER DAY */
-if(isset($_POST['update_salary'])){
-$id = intval($_POST['user_id']);
-$salary = floatval($_POST['per_day']);
+/* =============================
+   UPDATE PER DAY SALARY
+============================= */
+if (isset($_POST['update_salary'])) {
+    $id = (int)$_POST['user_id'];
+    $salary = (float)$_POST['per_day'];
 
-mysqli_query($conn,"
-UPDATE users
-SET per_day = '$salary'
-WHERE id = $id
-");
+    mysqli_query($conn, "
+        UPDATE users
+        SET per_day = '$salary'
+        WHERE id = $id
+    ");
 }
 
-/* FETCH STAFF */
-$q = mysqli_query($conn,"
-SELECT *
-FROM users
-WHERE role='staff'
-ORDER BY fullname ASC
+/* =============================
+   FETCH STAFF
+============================= */
+$q = mysqli_query($conn, "
+    SELECT *
+    FROM users
+    WHERE role='staff'
+    ORDER BY fullname ASC
 ");
 
-include "../includes/header.php";
-include "../includes/sidebar.php";
+include __DIR__ . "/../includes/header.php";
+include __DIR__ . "/../includes/sidebar.php";
 ?>
 
 <div class="main">
 
-<div class="page-header">
+    <div class="page-header">
+        <div class="page-title">
+            <h2>Payroll Management</h2>
+        </div>
+    </div>
 
-<div class="page-title">
-<h2>Payroll Management</h2>
-</div>
+    
+    <div class="card">
+        <form method="GET" class="filter-bar">
 
-</div>
+            <label>Month:</label>
+            <select name="month">
+                <?php for ($m = 1; $m <= 12; $m++): 
+                    $val = str_pad($m, 2, '0', STR_PAD_LEFT);
+                ?>
+                    <option value="<?= $val ?>" <?= $month == $val ? 'selected' : '' ?>>
+                        <?= date("F", mktime(0, 0, 0, $m, 1)) ?>
+                    </option>
+                <?php endfor; ?>
+            </select>
 
-<!-- FILTER -->
-<div class="card">
+            <label>Year:</label>
+            <select name="year">
+                <?php for ($y = date("Y"); $y >= 2024; $y--): ?>
+                    <option value="<?= $y ?>" <?= $year == $y ? 'selected' : '' ?>>
+                        <?= $y ?>
+                    </option>
+                <?php endfor; ?>
+            </select>
 
-<form method="GET" class="filter-bar">
+            <button type="submit" class="btn-search">Filter</button>
 
-<select name="month">
-<?php for($m=1;$m<=12;$m++): ?>
-<option value="<?= $m ?>" <?= $month==$m?'selected':'' ?>>
-<?= date("F",mktime(0,0,0,$m,1)) ?>
-</option>
-<?php endfor; ?>
-</select>
+        </form>
+    </div>
 
-<select name="year">
-<?php for($y=date("Y");$y>=2024;$y--): ?>
-<option value="<?= $y ?>" <?= $year==$y?'selected':'' ?>>
-<?= $y ?>
-</option>
-<?php endfor; ?>
-</select>
+    
+    <div class="card">
+        <div class="table-wrap">
+            <table>
 
-<button class="btn-search">Filter</button>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Per Day</th>
+                        <th>Days Worked</th>
+                        <th>Total Salary</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
 
-</form>
+                <tbody>
 
-</div>
+                <?php if (mysqli_num_rows($q) == 0): ?>
+                    <tr>
+                        <td colspan="6">No staff found.</td>
+                    </tr>
+                <?php else: ?>
 
-<div class="card">
+                    <?php while ($row = mysqli_fetch_assoc($q)): ?>
 
-<div class="table-wrap">
+                        <?php
+                        
+                        $userId = (int)$row['id'];
+                        $attendance = [];
 
-<table>
+                        $res = mysqli_query($conn, "
+                            SELECT DATE(time) as day
+                            FROM attendance
+                            WHERE user_id = $userId
+                            AND type = 'IN'
+                            AND MONTH(time) = '$month'
+                            AND YEAR(time) = '$year'
+                        ");
 
-<thead>
-<tr>
-<th>ID</th>
-<th>Name</th>
-<th>Per Day</th>
-<th>Days Worked</th>
-<th>Total Salary</th>
-<th>Actions</th>
-</tr>
-</thead>
+                        while ($r = mysqli_fetch_assoc($res)) {
+                            $attendance[$r['day']] = true;
+                        }
 
-<tbody>
+                        $daysWorked = count($attendance);
 
-<?php while($row=mysqli_fetch_assoc($q)): ?>
+                        
+                        $perDay = (float)$row['per_day'];
+                        $totalSalary = $daysWorked * $perDay;
+                        ?>
 
-<?php
-/* ATTENDANCE COUNT */
-$userId = $row['id'];
+                        <tr>
 
-$attendance = [];
+                            <td><?= $row['id'] ?></td>
 
-$res = mysqli_query($conn,"
-SELECT DATE(time) as day
-FROM attendance
-WHERE user_id=$userId
-AND type='IN'
-AND MONTH(time)='$month'
-AND YEAR(time)='$year'
-");
+                            <td>
+                                <strong><?= htmlspecialchars($row['fullname']) ?></strong>
+                            </td>
 
-while($r=mysqli_fetch_assoc($res)){
-$attendance[$r['day']] = true;
-}
+                            <td>
+                                <form method="POST" style="display:flex; gap:5px;">
+                                    <input type="hidden" name="user_id" value="<?= $row['id'] ?>">
 
-$daysWorked = count($attendance);
+                                    <input type="number"
+                                        name="per_day"
+                                        value="<?= $row['per_day'] ?>"
+                                        step="0.01"
+                                        style="width:100px;">
 
-/* SALARY */
-$perDay = $row['per_day'];
-$totalSalary = $daysWorked * $perDay;
-?>
+                                    <button name="update_salary" class="action-btn action-success">
+                                        Save
+                                    </button>
+                                </form>
+                            </td>
 
-<tr>
+                            <td><?= $daysWorked ?></td>
 
-<td><?= $row['id'] ?></td>
+                            <td>
+                                <strong style="color:#198754;">
+                                    ₱<?= number_format($totalSalary, 2) ?>
+                                </strong>
+                            </td>
 
-<td>
-<strong><?= htmlspecialchars($row['fullname']) ?></strong>
-</td>
+                            <td>
+                                <div class="actions">
 
-<td>
+                                    <a href="view.php?id=<?= $row['id'] ?>&month=<?= $month ?>&year=<?= $year ?>"
+                                    class="action-btn action-success">
+                                        View
+                                    </a>
 
-<form method="POST" style="display:flex;gap:5px;">
+                                    <a href="print.php?id=<?= $row['id'] ?>&month=<?= $month ?>&year=<?= $year ?>"
+                                    class="action-btn action-secondary"
+                                    target="_blank">
+                                        Print
+                                    </a>
 
-<input type="hidden" name="user_id" value="<?= $row['id'] ?>">
+                                </div>
+                            </td>
 
-<input type="number"
-name="per_day"
-value="<?= $row['per_day'] ?>"
-step="0.01"
-style="width:100px;">
+                        </tr>
 
-<button name="update_salary"
-class="action-btn action-success">
-Save
-</button>
+                    <?php endwhile; ?>
 
-</form>
+                <?php endif; ?>
 
-</td>
+                </tbody>
 
-<td><?= $daysWorked ?></td>
-
-<td>
-<strong style="color:#198754;">
-₱<?= number_format($totalSalary,2) ?>
-</strong>
-</td>
-
-<td>
-
-<div class="actions">
-
-<a href="view.php?id=<?= $row['id'] ?>&month=<?= $month ?>&year=<?= $year ?>"
-class="action-success">
-View
-</a>
-
-<a href="print.php?id=<?= $row['id'] ?>&month=<?= $month ?>&year=<?= $year ?>"
-class="action-success"
-target="_blank">
-Print
-</a>
-
-</div>
-
-</td>
-
-</tr>
-
-<?php endwhile; ?>
-
-</tbody>
-
-</table>
-
-</div>
-
-</div>
+            </table>
+        </div>
+    </div>
 
 </div>
 
-<?php include "../includes/footer.php"; ?>
+<?php include __DIR__ . "/../includes/footer.php"; ?>

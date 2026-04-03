@@ -1,10 +1,44 @@
 <?php
 session_start();
-require_once "includes/config.php"; 
+require_once "../includes/config.php"; 
 
-// Query para sa gallery
-$pets_query = "SELECT * FROM animals WHERE status = 'Available' ORDER BY id DESC";
+// =============================
+// ✅ PROCESS ADOPTION (SAFE)
+// =============================
+if(isset($_POST['submit_adoption'])) {
+
+    $animal_id = intval($_POST['animal_id']);
+    $name = mysqli_real_escape_string($conn, $_POST['adopter_name']);
+    $contact = mysqli_real_escape_string($conn, $_POST['contact']);
+    $address = mysqli_real_escape_string($conn, $_POST['address']);
+    $date = date("Y-m-d");
+
+    // IMPORTANT: siguraduhin may status column ka
+    $query = "INSERT INTO adoptions 
+              (animal_id, adopter_name, contact, address, adoption_date, status)
+              VALUES 
+              ('$animal_id', '$name', '$contact', '$address', '$date', 'Pending')";
+
+    if(mysqli_query($conn, $query)) {
+
+        // redirect sa tamang path
+        header("Location: ../adoptions/index.php?success=1");
+        exit;
+
+    } else {
+        die("Insert Error: " . mysqli_error($conn));
+    }
+}
+
+// =============================
+// ✅ FIXED QUERY (CASE SENSITIVE)
+// =============================
+$pets_query = "SELECT * FROM animals WHERE LOWER(status) = 'available' ORDER BY id DESC";
 $pets_result = mysqli_query($conn, $pets_query);
+
+if(!$pets_result){
+    die("Query Error: " . mysqli_error($conn));
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -72,7 +106,7 @@ $pets_result = mysqli_query($conn, $pets_query);
         <b>Strays Worth Saving Management System</b>
         <small>Welcome, <?= htmlspecialchars($_SESSION['user']['name'] ?? 'Guest') ?></small>
     </div>
-    <a href="index.php" class="admin-btn">Back to Page</a>
+    <a href="/animalrescue_db/index.php" class="admin-btn">Back to Page</a>
 </div>
 
 <div class="container">
@@ -80,7 +114,7 @@ $pets_result = mysqli_query($conn, $pets_query);
     
     <div class="pet-grid">
         <?php while($row = mysqli_fetch_assoc($pets_result)): 
-            $img = "uploads/animals/" . $row['image'];
+            $img = "../uploads/animals/" . $row['image'];
             $display_img = (!empty($row['image']) && file_exists($img)) ? $img : "logo.png";
         ?>
             <div class="pet-card">
@@ -99,7 +133,8 @@ $pets_result = mysqli_query($conn, $pets_query);
 <div id="adoptModal" class="modal">
     <div class="modal-content">
         <h3>Adopt <span id="pet_name_display"></span></h3>
-        <form action="process_adoption.php" method="POST">
+
+        <form method="POST">
             <input type="hidden" name="animal_id" id="animal_id">
             <div class="form-group">
                 <label>Your Name</label>

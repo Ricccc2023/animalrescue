@@ -1,5 +1,5 @@
 <?php
-require_once "includes/config.php";
+require_once "../includes/config.php";
 
 if (isset($_POST['submit_volunteer'])) {
     // 1. Kunin ang input mula sa form
@@ -17,12 +17,12 @@ if (isset($_POST['submit_volunteer'])) {
         // 3. Popup alert at babalik sa homepage
         echo "<script>
                 alert('Thank you for volunteering, $name! Your record has been saved.');
-                window.location.href = 'index.php';
+                window.location.href = '../index.php';
             </script>";
     } else {
         echo "<script>
                 alert('Error: " . mysqli_error($conn) . "');
-                window.location.href = 'index.php';
+                window.location.href = '../index.php';
             </script>";
     }
 } else {

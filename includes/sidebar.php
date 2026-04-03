@@ -57,7 +57,8 @@ Payroll
 </a>
 <?php endif; ?>
 
-<a class="logout-btn" href="<?= BASE_URL ?>/logout.php">
+<a style="margin-top:35px;"
+ class="logout-btn" href="<?= BASE_URL ?>/logout.php">
 Logout
 </a>
 

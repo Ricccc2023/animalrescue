@@ -19,10 +19,71 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     exit();
 }
 
-$q = $_GET['q'] ?? '';
-$search = "%" . $q . "%";
-$stmt = $conn->prepare("SELECT * FROM supplies WHERE item_name LIKE ? OR category LIKE ? ORDER BY id DESC");
-$stmt->bind_param("ss", $search, $search);
+/* =========================
+FILTERS (UPGRADED)
+========================= */
+
+$search   = trim($_GET['search'] ?? '');
+$category = $_GET['category'] ?? '';
+$status   = $_GET['status'] ?? '';
+$order    = ($_GET['sort'] ?? 'DESC') === 'ASC' ? 'ASC' : 'DESC';
+
+$params = [];
+$types  = "";
+
+/* =========================
+BASE QUERY
+========================= */
+
+$sql = "SELECT * FROM supplies WHERE 1=1";
+
+/* =========================
+SEARCH
+========================= */
+
+if ($search !== '') {
+    $sql .= " AND (
+        item_name LIKE ?
+        OR category LIKE ?
+    )";
+    $like = "%$search%";
+    $params[] = $like;
+    $params[] = $like;
+    $types .= "ss";
+}
+
+/* =========================
+CATEGORY FILTER
+========================= */
+
+if ($category !== '') {
+    $sql .= " AND category = ?";
+    $params[] = $category;
+    $types .= "s";
+}
+
+/* =========================
+STATUS FILTER
+========================= */
+
+if ($status !== '') {
+    $sql .= " AND status = ?";
+    $params[] = $status;
+    $types .= "s";
+}
+
+$sql .= " ORDER BY id $order";
+
+/* =========================
+EXECUTE
+========================= */
+
+$stmt = $conn->prepare($sql);
+
+if (!empty($params)) {
+    $stmt->bind_param($types, ...$params);
+}
+
 $stmt->execute();
 $supplies = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
@@ -41,22 +102,46 @@ ob_start();
 <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
     <div>
         <h2>Supplies Inventory</h2>
-        <p style="color:#666;">Manage supply inventory and stock levels</p>
     </div>
     <button onclick="openModal('addModal')" class="btn-add" style="border:none; cursor:pointer;">+ Add New Supply</button>
 </div>
 
 <div class="card" style="margin-bottom:20px;">
-    <form method="get" style="display:flex; gap:10px;">
-        <input type="text" name="q" 
-            value="<?= htmlspecialchars($q) ?>" 
-            placeholder="Search item or category..." 
-            style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; max-width: 400px;">
-        <button type="submit" class="btn-add" style="border:none; cursor:pointer; width: 100px;">Search</button>
-        <?php if($q): ?>
-            <a href="index.php" class="btn-save" style="background:#666; text-decoration:none; display: flex; align-items: center; justify-content: center;">Clear</a>
-        <?php endif; ?>
-    </form>
+<form method="GET" class="filter-bar" style="display:flex; gap:10px; flex-wrap:wrap;">
+
+<input type="text" 
+       name="search"
+       placeholder="Search item or category..."
+       value="<?= htmlspecialchars($search) ?>"
+       style="flex:1; min-width:200px;">
+
+<select name="category">
+    <option value="">All Category</option>
+    <option value="Food" <?= $category=='Food'?'selected':'' ?>>Food</option>
+    <option value="Medicine" <?= $category=='Medicine'?'selected':'' ?>>Medicine</option>
+    <option value="Cleaning" <?= $category=='Cleaning'?'selected':'' ?>>Cleaning</option>
+    <option value="Equipment" <?= $category=='Equipment'?'selected':'' ?>>Equipment</option>
+</select>
+
+<select name="status">
+    <option value="">All Status</option>
+    <option value="In Stock" <?= $status=='In Stock'?'selected':'' ?>>In Stock</option>
+    <option value="Low Stock" <?= $status=='Low Stock'?'selected':'' ?>>Low Stock</option>
+    <option value="Out of Stock" <?= $status=='Out of Stock'?'selected':'' ?>>Out of Stock</option>
+</select>
+
+<select name="sort">
+    <option value="DESC" <?= $order==='DESC'?'selected':'' ?>>Newest</option>
+    <option value="ASC" <?= $order==='ASC'?'selected':'' ?>>Oldest</option>
+</select>
+
+<button type="submit" class="btn-add" style="border:none; cursor:pointer;">Filter</button>
+
+<?php if($search || $category || $status): ?>
+<a href="index.php" class="btn-save" style="background:#666; text-decoration:none;">Clear</a>
+<?php endif; ?>
+
+</form>
 </div>
 
 <div class="card">
@@ -72,6 +157,10 @@ ob_start();
                 </tr>
             </thead>
             <tbody>
+                <?php if(empty($supplies)): ?>
+                    <tr><td colspan="5" style="text-align:center; padding:20px;">No supply records found.</td></tr>
+                <?php else: ?>
+
                 <?php foreach ($supplies as $s): ?>
                 <tr>
                     <td><b><?= htmlspecialchars($s['item_name']) ?></b></td>
@@ -90,13 +179,14 @@ ob_start();
                     </td>
                 </tr>
                 <?php endforeach; ?>
-                <?php if(empty($supplies)): ?>
-                    <tr><td colspan="5" style="text-align:center; padding:20px;">No supply records found.</td></tr>
+
                 <?php endif; ?>
             </tbody>
         </table>
     </div>
 </div>
+
+<!-- MODALS (UNCHANGED) -->
 
 <div id="addModal" class="modal">
     <div class="modal-content">
@@ -124,8 +214,8 @@ ob_start();
                 </select>
             </div>
             <div class="modal-footer">
-                <button type="button" onclick="closeModal('addModal')" class="btn-save" style="background:#666; border:none; cursor:pointer;">Cancel</button>
-                <button type="submit" name="add_supply" class="btn-add" style="border:none; cursor:pointer;">Save Item</button>
+                <button type="button" onclick="closeModal('addModal')" class="btn-save" style="background:#666;">Cancel</button>
+                <button type="submit" name="add_supply" class="btn-add">Save Item</button>
             </div>
         </form>
     </div>
@@ -137,7 +227,7 @@ ob_start();
         <hr>
         <div id="viewContent" style="line-height: 2.5; margin-top: 15px;"></div>
         <div class="modal-footer">
-            <button type="button" onclick="closeModal('viewModal')" class="btn-add" style="border:none; cursor:pointer;">Close</button>
+            <button type="button" onclick="closeModal('viewModal')" class="btn-add">Close</button>
         </div>
     </div>
 </div>
@@ -170,8 +260,8 @@ ob_start();
                 </select>
             </div>
             <div class="modal-footer">
-                <button type="button" onclick="closeModal('editModal')" class="btn-save" style="background:#666; border:none; cursor:pointer;">Cancel</button>
-                <button type="submit" name="update_supply" class="btn-add" style="border:none; cursor:pointer;">Update Changes</button>
+                <button type="button" onclick="closeModal('editModal')" class="btn-save" style="background:#666;">Cancel</button>
+                <button type="submit" name="update_supply" class="btn-add">Update Changes</button>
             </div>
         </form>
     </div>
@@ -201,7 +291,6 @@ function editItem(data) {
     openModal('editModal');
 }
 
-// Close modal if user clicks background
 window.onclick = function(event) {
     if (event.target.className === 'modal') {
         event.target.style.display = 'none';
