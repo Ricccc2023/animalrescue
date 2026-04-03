@@ -98,7 +98,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 <div class="topbar">
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <div>Strays Worth Saving Management System</div>
-        <div style="font-size:14px;">GCash Donation</div>
+        <a href="index.php" class="admin-btn">Back to Page</a>
     </div>
 </div>
 

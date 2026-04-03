@@ -13,7 +13,33 @@ $pets_result = mysqli_query($conn, $pets_query);
     <title>Available Pets - Strays Worth Saving</title>
     <style>
         body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8f9fa; }
-        .topbar { background: #409fcf; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+
+
+.topbar { 
+            background: #409fcf; 
+            color: white; 
+            padding: 15px 40px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+.topbar-info b { font-size: 18px; display: block; }
+.topbar-info small { font-size: 12px; opacity: 0.9; }
+
+
+        .admin-btn { 
+            background: white; 
+            color: #1f4e46; 
+            padding: 10px 20px; 
+            font-size: 14px; 
+            font-weight: 600; 
+            text-decoration: none; 
+            border-radius: 4px; /* Boxy corners */
+            transition: 0.3s;
+        }
+        .admin-btn:hover { background: #eef2f3; transform: translateY(-2px); }
+
         .back-btn { color: white; text-decoration: none; font-weight: bold; font-size: 14px; }
         
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
@@ -42,9 +68,12 @@ $pets_result = mysqli_query($conn, $pets_query);
 <body>
 
 <div class="topbar">
-    <a href="index.php" class="back-btn">← Back to Home</a>
-    <div style="font-weight:bold;">Strays Worth Saving</div>
-    <div></div> </div>
+    <div class="topbar-info">
+        <b>Strays Worth Saving Management System</b>
+        <small>Welcome, <?= htmlspecialchars($_SESSION['user']['name'] ?? 'Guest') ?></small>
+    </div>
+    <a href="index.php" class="admin-btn">Back to Page</a>
+</div>
 
 <div class="container">
     <h1 class="page-title">Find Your New Best Friend</h1>

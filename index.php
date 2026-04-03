@@ -30,15 +30,16 @@ require_once "includes/config.php";
             z-index: -1; 
             pointer-events: none; 
         }
-
         .topbar { 
             background: #409fcf; 
             color: white; 
-            padding: 15px 40px; 
+            padding: 18px 20px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            font-size: 24px;
+            font-weight: 600;
         }
 
         .topbar-info b { font-size: 18px; display: block; }
@@ -60,17 +61,21 @@ require_once "includes/config.php";
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            min-height: 80vh; 
+            min-height: 60vh; 
+            margin-top: 20px;
         }
 
         .booking-card { 
             background: white; 
-            width: 550px; 
+            width: 510px;
+            height: 425px; 
             padding: 50px 40px; 
-            border-radius: 8px; /* Modern boxy corners */
+            border-radius: 0px; /* Modern boxy corners */
             box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
             text-align: center; 
             border: 1px solid #eee;
+            margin-top: 20px;
+            margin-bottom: 0px;
         }
 
         .section-box { 
@@ -169,7 +174,7 @@ require_once "includes/config.php";
         <h1 style="font-size:36px; margin:0; color:#1f4e46; letter-spacing:-1px;">SWS Adoption Portal</h1>
         <div class="section-box">Tanauan, Batangas, Philippines</div>
 
-        <div style="text-align:left; margin: 30px 0; background:#f8fafc; padding:25px; border-left:4px solid #409fcf; border-radius:4px;">
+        <div style="text-align:left; margin: 0px 0; background:#f8fafc; padding:25px; border-left:4px solid #409fcf; border-radius:4px;">
             <b style="color:#1f4e46; font-size:16px;">General Guidelines:</b>
             <ol style="margin: 12px 0 0 0; padding-left:20px; font-size:14px; color:#475569; line-height:1.7;">
                 <li>Click <b>Adopt Now</b> to view our available furry friends.</li>
@@ -181,33 +186,10 @@ require_once "includes/config.php";
         <div style="margin-top:20px;">
             <a href="pets.php" class="action-btn">Adopt Now!</a>
             
-            <button href="public_donate.php" class="action-btn">Donate</button>
+            <a href="public_donate.php" class="action-btn">Donate</a>
+
             <button type="button" onclick="openModal('volunteerModal')" class="action-btn">Be a Volunteer</button>
         </div>
-    </div>
-</div>
-
-<div id="donateModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header"><h3>Make a Donation</h3></div>
-        <form action="process_donation.php" method="POST">
-            <div class="form-group">
-                <label>Full Name</label>
-                <input type="text" name="name" placeholder="Juan Dela Cruz" required>
-            </div>
-            <div class="form-group">
-                <label>Amount (PHP)</label>
-                <input type="number" name="amount" placeholder="0.00" required>
-            </div>
-            <div class="form-group">
-                <label>Gcash Reference Number</label>
-                <input type="text" name="reference_no" placeholder="12-digit number" required>
-            </div>
-            <div style="display:flex; gap:10px; justify-content: flex-end;">
-                <button type="button" onclick="closeModal('donateModal')" class="close-btn">Cancel</button>
-                <button type="submit" name="submit_donation" class="action-btn" style="margin:0;">Submit</button>
-            </div>
-        </form>
     </div>
 </div>
 
