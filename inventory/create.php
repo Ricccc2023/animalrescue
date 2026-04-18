@@ -86,7 +86,6 @@ ob_start();
 <select name="status">
 <option value="available">Available</option>
 <option value="rescued">Rescued</option>
-<option value="adopted">Adopted</option>
 </select>
 </div>
 
